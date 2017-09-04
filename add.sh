@@ -4,16 +4,10 @@ set -eu
 T=$(mktemp -d --suffix=sync)
 trap 'rm -rf '$T EXIT
 
-if ! tar -C $T --strip-components=1 -xf $2; then
-    rm -rf $T
-    T=$(mktemp -d --suffix=sync)
-    # there are things in the archive without a parent directory; so angry
-    tar -C $T -xf $2
-fi
+dpkg-source --extract --no-check --no-copy --skip-debianization $2 $T/src >/dev/null
+cd $T/src
+rm -rf debian
 
-cd $T
-
-# why are there unreable files? combat-0.8.1
+# why are there unreadable files? combat-0.8.1
 chmod -R u+rX .
-casync make --without=2sec-time --without=usec-time --without=read-only --without=unix --without=best $1
-
+casync make --without=2sec-time --without=usec-time --without=read-only --without=unix --without=best $1 >/dev/null
