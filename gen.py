@@ -7,8 +7,8 @@ import ninja_syntax
 
 CLEAN = re.compile('\.orig\.tar\.[a-z0-9]+$')
 
-dest = '/mnt/data/deb-casync'
-mirror = '/mnt/data/sources/mirror/deb.debian.org/debian'
+dest = '/home/deb-casync/data'
+mirror = '/home/apt-mirror/mirror/debian.mirrors.ovh.net/debian'
 
 
 def dscs():
