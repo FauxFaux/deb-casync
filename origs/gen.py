@@ -22,8 +22,10 @@ def main():
 
     n.rule('idx', ['./add.sh', '$out', '$in', '$dest/default.castr'])
 
-    for dsc in mirror.all_dscs():
-        _, src, ver = mirror.read_dsc(dsc)
+    for dsc_path in mirror.all_dscs():
+        dsc = mirror.read_dsc(dsc_path)
+        src = dsc['Source']
+        ver = dsc['Version']
 
         if src.startswith('lib'):
             prefix = src[0:4]
@@ -32,7 +34,7 @@ def main():
 
         n.build('$dest/{}/{}/{}.caidx'.format(prefix, src, ver),
                 'idx',
-                '$mirror' + dsc,
+                '$mirror' + dsc_path,
                 implicit='add.sh',
                 variables={'description': 'IDX {} {}'.format(src, ver)})
 
