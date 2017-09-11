@@ -28,8 +28,8 @@ else
 fi
 
 # normalise permissions, to simulate git, and to ensure we can read files
-# this is, I believe, a common default umask.
-chmod -R u+rwX,g=u,o=rX .
+# this is, I believe, a common default umask. (644, 755)
+chmod -R u+rwX,g=rX,o=rX .
 
 mkdir -p "$(dirname "$1")"
 
