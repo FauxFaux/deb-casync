@@ -21,11 +21,24 @@ def main():
     n.build('build.ninja', 'gen', ['../casync.py', 'origs'], variables={'generator': 1})
 
     n.rule('idx', ['./add.sh', '$out', '$in', '$dest/default.castr'])
+    n.pool('huge', 1)
+    n.pool('medium', 4)
 
     for dsc_path in mirror.all_dscs():
         dsc = mirror.read_dsc(dsc_path)
         src = dsc['Source']
         ver = dsc['Version']
+
+        total_compressed = sum(int(file['size']) for file in dsc['Files'])
+
+        # Rule of thumb: ~200mb packages expand to 2-3gb.
+        # 64gb of ram for 32 cores -> 2gb of cache per core
+        if total_compressed > 100*1024*1024:
+            pool = 'huge'
+        elif total_compressed > 10*1024*1024:
+            pool = 'medium'
+        else:
+            pool = None
 
         if src.startswith('lib'):
             prefix = src[0:4]
@@ -36,7 +49,10 @@ def main():
                 'idx',
                 '$mirror' + dsc_path,
                 implicit='add.sh',
-                variables={'description': 'IDX {} {}'.format(src, ver)})
+                variables={
+                    'description': 'IDX {} {}'.format(src, ver),
+                    'pool': pool
+                })
 
     n.close()
     os.rename('.build.ninja~', 'build.ninja')
