@@ -1,13 +1,31 @@
 #!/bin/sh
 set -eu
 
-T=$(mktemp -d --suffix=sync -p /mnt/memfs)
+T=$(mktemp -d --suffix=sync)
 trap 'rm -rf '${T} EXIT
 
+if [ "$4" = "origs" ]; then
+    skip=yes
+elif [ "$4" = "debdir" ]; then
+    # skip=no
+    if [ -d "${1}" ]; then
+        exit 0
+    fi
+else
+    exit 1
+fi
+
 # --no-check here skips signature checking, for performance. This is expected to be run on a local, trusted mirror.
-dpkg-source --extract --no-check --no-copy --skip-debianization $2 ${T}/src >/dev/null
+dpkg-source --extract --no-check --no-copy ${skip+--skip-debianization} "${2}" "${T}/src" >/dev/null
 cd ${T}/src
-rm -rf debian
+
+if [ "$4" = "origs" ]; then
+    rm -rf debian
+elif [ "$4" = "debdir" ]; then
+    cd debian
+else
+    exit 1
+fi
 
 # normalise permissions, to simulate git, and to ensure we can read files
 # this is, I believe, a common default umask.
