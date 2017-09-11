@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import multiprocessing
 import os
 
 import mirror
@@ -21,8 +22,12 @@ def main():
     n.build('build.ninja', 'gen', ['../casync.py', 'origs'], variables={'generator': 1})
 
     n.rule('idx', ['./add.sh', '$out', '$in', '$dest/default.castr'])
-    n.pool('huge', 1)
-    n.pool('medium', 4)
+
+    # 8/8 + 1 = 2 on a quad-core with hyperthreading
+    # 32/8 + 1 = 5 on a 32vCPU instance
+
+    n.pool('huge', int(multiprocessing.cpu_count() / 8) + 1)
+    n.pool('medium', int(multiprocessing.cpu_count() / 4) + 1)
 
     for dsc_path in mirror.all_dscs():
         dsc = mirror.read_dsc(dsc_path)
