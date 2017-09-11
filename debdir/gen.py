@@ -3,47 +3,10 @@
 import os
 import re
 
+import mirror
 import ninja_syntax
 
-dest = '/home/deb-casync/debdir/'
-mirror = '/home/apt-mirror/mirror/debian.mirrors.ovh.net/debian'
-
-
-def dscs():
-    for root, _, files in os.walk(mirror):
-        assert root[0:len(mirror)] == mirror
-        root = root[len(mirror):]
-        for file in files:
-            if file.endswith('.dsc'):
-                yield os.path.join(root, file)
-
-
-def clean(name):
-    return re.sub(CLEAN, '', os.path.basename(name))
-
-
-# Why do I keep doing this? I hate you, Faux.
-def read_format(dsc):
-    with open(dsc) as d:
-        fmt = None
-        ver = None
-        src = None
-
-        for line in d.readlines():
-            if 'Format: 3.0 (quilt)\n' == line:
-                fmt = 'q'
-            elif 'Format: 3.0 (native)\n' == line:
-                fmt = 'n'
-            elif 'Format: 1.0\n' == line:
-                fmt = '1'
-            elif line.startswith('Version: '):
-                ver = line[len('Version: '):].strip()
-            elif line.startswith('Source: '):
-                src = line[len('Source: '):].strip()
-
-            if fmt and ver and src:
-                return fmt, src, ver
-    raise Exception("Unrecognised source format")
+dest = os.path.join(mirror.dest_root, 'debdir')
 
 
 def main():
@@ -51,7 +14,7 @@ def main():
 
     n.variable('root', os.getcwd())
     n.variable('dest', dest)
-    n.variable('mirror', mirror)
+    n.variable('mirror', mirror.debian)
     if not os.path.isdir(dest):
         os.makedirs(dest)
 
@@ -63,7 +26,6 @@ def main():
     for line in open('sid.lst'):
         src, ver, dsc = line.strip().split(' ')
         dsc = re.sub('_.*?:', '_', dsc)
-
 
         n.build('$dest/{}/{}/debian'.format(src, ver),
                 'idx',

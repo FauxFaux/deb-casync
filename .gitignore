@@ -3,3 +3,4 @@ build.ninja
 .idea/
 __pycache__
 *.iml
+*~
