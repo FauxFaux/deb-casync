@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-T=$(mktemp -d --suffix=sync)
+T=$(mktemp -d --suffix=sync -p /mnt/memfs)
 trap 'rm -rf '${T} EXIT
 
 # --no-check here skips signature checking, for performance. This is expected to be run on a local, trusted mirror.
@@ -11,12 +11,15 @@ rm -rf debian
 
 # normalise permissions, to simulate git, and to ensure we can read files
 # this is, I believe, a common default umask.
-chmod -R u=rwX,g=rX,o=rX .
+chmod -R u+rwX,g=u,o=rX .
+
+mkdir -p "$(dirname "$1")"
 
 # attempt to remove all metadata except permissions
 # check with make --verbose
 # see also https://github.com/systemd/casync/issues/81
 casync make \
+    --store=$3 \
     --without=best \
     --without=2sec-time --without=sec-time --without=usec-time \
     --without=read-only \

@@ -5,9 +5,7 @@ import re
 
 import ninja_syntax
 
-CLEAN = re.compile('\.orig\.tar\.[a-z0-9]+$')
-
-dest = '/home/deb-casync/data'
+dest = '/home/deb-casync/debdir/'
 mirror = '/home/apt-mirror/mirror/debian.mirrors.ovh.net/debian'
 
 
@@ -62,14 +60,16 @@ def main():
 
     n.rule('idx', ['./add.sh', '$out', '$in'])
 
-    for dsc in dscs():
-        _, src, ver = read_format(mirror + dsc)
+    for line in open('sid.lst'):
+        src, ver, dsc = line.strip().split(' ')
+        dsc = re.sub('_.*?:', '_', dsc)
 
-        n.build('$dest/{}_{}.caidx'.format(src, ver),
+
+        n.build('$dest/{}/{}/debian'.format(src, ver),
                 'idx',
-                '$mirror' + dsc,
+                '$mirror/' + dsc,
                 implicit='add.sh',
-                variables={'description': 'IDX {} {}'.format(src, ver)})
+                variables={'description': 'DEB {} {}'.format(src, ver)})
 
     n.close()
     os.rename('.build.ninja~', 'build.ninja')
