@@ -16,7 +16,7 @@ else
 fi
 
 # --no-check here skips signature checking, for performance. This is expected to be run on a local, trusted mirror.
-dpkg-source --extract --no-check --no-copy ${skip+--skip-debianization} "${2}" "${T}/src" >/dev/null
+dpkg-source --extract --no-check --no-copy ${skip+--skip-debianization} --skip-patches "${2}" "${T}/src" >/dev/null
 cd ${T}/src
 
 if [ "$4" = "origs" ]; then
